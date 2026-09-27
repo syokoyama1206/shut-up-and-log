@@ -1,0 +1,35 @@
+CREATE TABLE food_master (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    reference_amount REAL NOT NULL CHECK(reference_amount > 0),
+    protein REAL NOT NULL CHECK(protein >= 0),
+    fat REAL NOT NULL CHECK(fat >= 0),
+    carbs REAL NOT NULL CHECK(carbs >= 0),
+    updated_at INTEGER NOT NULL
+);
+CREATE TABLE meal_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    food_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL CHECK(amount > 0),
+    unit TEXT NOT NULL,
+    protein REAL NOT NULL CHECK(protein >= 0),
+    fat REAL NOT NULL CHECK(fat >= 0),
+    carbs REAL NOT NULL CHECK(carbs >= 0),
+    created_at INTEGER NOT NULL
+);
+CREATE INDEX meal_date ON meal_entry(date);
+
+allFoods:
+SELECT * FROM food_master ORDER BY updated_at DESC, id;
+allMeals:
+SELECT * FROM meal_entry ORDER BY created_at DESC, id;
+upsertFood:
+INSERT OR REPLACE INTO food_master VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+insertMeal:
+INSERT INTO meal_entry VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+deleteMeal:
+DELETE FROM meal_entry WHERE id = ?;

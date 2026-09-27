@@ -1,0 +1,9 @@
+*.iml
+.gradle/
+.kotlin/
+.idea/
+**/build/
+local.properties
+.DS_Store
+iosApp/*.xcodeproj/
+iosApp/Pods/
