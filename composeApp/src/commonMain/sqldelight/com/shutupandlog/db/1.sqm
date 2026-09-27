@@ -1,0 +1,16 @@
+CREATE TABLE workout_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    date TEXT NOT NULL,
+    exercise TEXT NOT NULL,
+    category TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+CREATE TABLE workout_set (
+    workout_id TEXT NOT NULL,
+    set_order INTEGER NOT NULL,
+    weight_kg REAL NOT NULL CHECK(weight_kg >= 0),
+    reps INTEGER NOT NULL CHECK(reps > 0),
+    PRIMARY KEY(workout_id, set_order),
+    FOREIGN KEY(workout_id) REFERENCES workout_entry(id) ON DELETE CASCADE
+);
+CREATE INDEX workout_date ON workout_entry(date);
