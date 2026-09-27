@@ -21,7 +21,48 @@ data class MealEntry(
     val id: String, val foodId: String, val date: LocalDate, val name: String,
     val amount: Double, val unit: QuantityUnit, val pfc: Pfc, val createdAt: Long,
 )
-data class LogData(val foods: List<FoodMaster> = emptyList(), val meals: List<MealEntry> = emptyList())
+enum class MuscleCategory(val label: String) {
+    CHEST("胸"), BACK("背中"), SHOULDERS("肩"), ARMS("腕"),
+    ABS("腹"), LEGS("脚"), GLUTES("尻"), OTHER("その他"),
+}
+
+data class ExercisePreset(val name: String, val category: MuscleCategory)
+
+val exercisePresets = listOf(
+    ExercisePreset("ベンチプレス", MuscleCategory.CHEST),
+    ExercisePreset("ダンベルフライ", MuscleCategory.CHEST),
+    ExercisePreset("懸垂", MuscleCategory.BACK),
+    ExercisePreset("ラットプルダウン", MuscleCategory.BACK),
+    ExercisePreset("デッドリフト", MuscleCategory.BACK),
+    ExercisePreset("ショルダープレス", MuscleCategory.SHOULDERS),
+    ExercisePreset("サイドレイズ", MuscleCategory.SHOULDERS),
+    ExercisePreset("アームカール", MuscleCategory.ARMS),
+    ExercisePreset("トライセプスプレスダウン", MuscleCategory.ARMS),
+    ExercisePreset("クランチ", MuscleCategory.ABS),
+    ExercisePreset("プランク", MuscleCategory.ABS),
+    ExercisePreset("スクワット", MuscleCategory.LEGS),
+    ExercisePreset("レッグプレス", MuscleCategory.LEGS),
+    ExercisePreset("ヒップスラスト", MuscleCategory.GLUTES),
+    ExercisePreset("ヒップアブダクション", MuscleCategory.GLUTES),
+)
+
+data class TrainingSet(val weightKg: Double, val reps: Int) {
+    init { require(weightKg.isFinite() && weightKg >= 0); require(reps > 0) }
+}
+
+data class WorkoutEntry(
+    val id: String, val date: LocalDate, val exercise: String, val category: MuscleCategory,
+    val sets: List<TrainingSet>, val createdAt: Long,
+) {
+    init { require(exercise.isNotBlank()); require(sets.isNotEmpty()) }
+    val volume: Double get() = sets.sumOf { it.weightKg * it.reps }
+}
+
+data class LogData(
+    val foods: List<FoodMaster> = emptyList(),
+    val meals: List<MealEntry> = emptyList(),
+    val workouts: List<WorkoutEntry> = emptyList(),
+)
 
 object Nutrition {
     fun calculate(mode: NutritionMode, pfc: Pfc, amount: Double, reference: Double): Pfc {

@@ -43,7 +43,29 @@ class SqlLogRepository(
     override suspend fun deleteMeal(id: String) = withContext(dispatcher) {
         mutex.withLock { queries.deleteMeal(id); refresh() }
     }
+    override suspend fun saveWorkout(input: ValidWorkout, date: LocalDate) = withContext(dispatcher) {
+        mutex.withLock {
+            val id = newId()
+            database.transaction {
+                queries.insertWorkout(id, date.toString(), input.exercise, input.category.name, now())
+                input.sets.forEachIndexed { index, set ->
+                    queries.insertWorkoutSet(id, index.toLong(), set.weightKg, set.reps.toLong())
+                }
+            }
+            refresh()
+        }
+    }
+    override suspend fun deleteWorkout(id: String) = withContext(dispatcher) {
+        mutex.withLock {
+            database.transaction {
+                queries.deleteWorkoutSets(id)
+                queries.deleteWorkout(id)
+            }
+            refresh()
+        }
+    }
     private fun refresh() {
+        val workoutRows = queries.allWorkouts().executeAsList()
         state.value = LogData(
             queries.allFoods().executeAsList().map {
                 FoodMaster(it.id, it.name, QuantityUnit.valueOf(it.unit), NutritionMode.valueOf(it.mode),
@@ -52,6 +74,11 @@ class SqlLogRepository(
             queries.allMeals().executeAsList().map {
                 MealEntry(it.id, it.food_id, LocalDate.parse(it.date), it.name, it.amount,
                     QuantityUnit.valueOf(it.unit), Pfc(it.protein, it.fat, it.carbs), it.created_at)
+            },
+            workoutRows.groupBy { it.id }.map { (_, rows) ->
+                val first = rows.first()
+                WorkoutEntry(first.id, LocalDate.parse(first.date), first.exercise,
+                    MuscleCategory.valueOf(first.category), rows.map { TrainingSet(it.weight_kg, it.reps.toInt()) }, first.created_at)
             },
         )
     }

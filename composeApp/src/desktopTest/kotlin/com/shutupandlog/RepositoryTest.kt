@@ -64,4 +64,18 @@ class RepositoryTest {
             } finally { reopened.close() }
         } finally { Files.deleteIfExists(path) }
     }
+    @Test fun workoutSetsAreStoredInOrderAndDeletedTogether() = runTest {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        try {
+            LogDatabase.Schema.create(driver)
+            val repo = SqlLogRepository(LogDatabase(driver), StandardTestDispatcher(testScheduler))
+            repo.saveWorkout(ValidWorkout("スクワット", MuscleCategory.LEGS,
+                listOf(TrainingSet(80.0, 10), TrainingSet(90.0, 8))), day)
+            val saved = repo.data.value.workouts.single()
+            assertEquals(listOf(80.0, 90.0), saved.sets.map { it.weightKg })
+            assertEquals(1520.0, saved.volume)
+            repo.deleteWorkout(saved.id)
+            assertTrue(repo.data.value.workouts.isEmpty())
+        } finally { driver.close() }
+    }
 }

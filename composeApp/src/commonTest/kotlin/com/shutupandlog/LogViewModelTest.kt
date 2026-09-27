@@ -18,6 +18,8 @@ class LogViewModelTest {
         override suspend fun load() {}
         override suspend fun save(input: ValidFood, date: LocalDate) { if (fail) error("disk full"); saves++ }
         override suspend fun deleteMeal(id: String) {}
+        override suspend fun saveWorkout(input: ValidWorkout, date: LocalDate) {}
+        override suspend fun deleteWorkout(id: String) {}
     }
     @Test fun validationFailurePreservesInputAndDoubleTapSavesOnce() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))

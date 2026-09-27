@@ -22,6 +22,22 @@ CREATE TABLE meal_entry (
     created_at INTEGER NOT NULL
 );
 CREATE INDEX meal_date ON meal_entry(date);
+CREATE TABLE workout_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    date TEXT NOT NULL,
+    exercise TEXT NOT NULL,
+    category TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+CREATE TABLE workout_set (
+    workout_id TEXT NOT NULL,
+    set_order INTEGER NOT NULL,
+    weight_kg REAL NOT NULL CHECK(weight_kg >= 0),
+    reps INTEGER NOT NULL CHECK(reps > 0),
+    PRIMARY KEY(workout_id, set_order),
+    FOREIGN KEY(workout_id) REFERENCES workout_entry(id) ON DELETE CASCADE
+);
+CREATE INDEX workout_date ON workout_entry(date);
 
 allFoods:
 SELECT * FROM food_master ORDER BY updated_at DESC, id;
@@ -33,3 +49,15 @@ insertMeal:
 INSERT INTO meal_entry VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 deleteMeal:
 DELETE FROM meal_entry WHERE id = ?;
+allWorkouts:
+SELECT workout_entry.id, date, exercise, category, created_at, set_order, weight_kg, reps
+FROM workout_entry JOIN workout_set ON workout_entry.id = workout_set.workout_id
+ORDER BY date DESC, created_at DESC, set_order;
+insertWorkout:
+INSERT INTO workout_entry VALUES (?, ?, ?, ?, ?);
+insertWorkoutSet:
+INSERT INTO workout_set VALUES (?, ?, ?, ?);
+deleteWorkout:
+DELETE FROM workout_entry WHERE id = ?;
+deleteWorkoutSets:
+DELETE FROM workout_set WHERE workout_id = ?;
